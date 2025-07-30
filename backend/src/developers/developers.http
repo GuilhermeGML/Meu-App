@@ -1,0 +1,21 @@
+### Listar desenvolvedores
+GET http://localhost:3000/developers
+
+### Get desenvolvedor
+GET  http://localhost:3000/developers/1
+
+### Criar desenvolvedor
+POST http://localhost:3000/developers
+Content-Type: application/json
+
+{
+    "nome": "Genius",
+    "email": "guilherme@gmail.com",
+    "dateOfBirth": "2004-05-05"
+}
+
+### Update desenvolvedor
+PATCH http://localhost:3000/developers/1
+
+### Delete desenvolvedor
+DELETE http://localhost:3000/developers/1

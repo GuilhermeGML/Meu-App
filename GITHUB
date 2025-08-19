@@ -1,0 +1,11 @@
+GITHUB
+cd "/home/guilherme-linux/Área de trabalho/App"
+
+git status
+
+git add .
+
+git commit -m "Mensagem explicando as alterações feitas"
+
+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
+

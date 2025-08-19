@@ -1,4 +1,4 @@
-import { IsDateString, IsEmail, IsString } from "class-validator";
+import { IsEmail, IsString, Matches } from "class-validator";
 
 export class CreateDeveloperDto {
 
@@ -8,6 +8,6 @@ export class CreateDeveloperDto {
     @IsEmail()
     email: string;
 
-    @IsDateString()
-    dateOfBirth: string;
+    @IsString()
+    cpf: string;
 }

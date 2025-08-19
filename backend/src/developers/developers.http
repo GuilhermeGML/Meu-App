@@ -11,7 +11,7 @@ Content-Type: application/json
 {
     "nome": "Genius",
     "email": "guilherme@gmail.com",
-    "dateOfBirth": "2004-05-05"
+    "cpf": "524.157.278-30"
 }
 
 ### Update desenvolvedor

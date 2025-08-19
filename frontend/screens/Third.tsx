@@ -9,7 +9,7 @@ type Developer = {
   id: string;
   nome: string;
   email: string;
-  dateOfBirth: string;
+  cpf: string;
 };
 
 const Third: React.FC<Props> = ({ navigation }) => {
@@ -23,7 +23,7 @@ const Third: React.FC<Props> = ({ navigation }) => {
 
   const fetchDevelopers = () => {
     setLoading(true);
-    fetch('http://192.168.100.24:3000/developers')
+    fetch('http://localhost:3000/developers')
       .then((response) => response.json())
       .then((data) => {
         setDevelopers(data);
@@ -37,7 +37,7 @@ const Third: React.FC<Props> = ({ navigation }) => {
 
   const handleDelete = (id: string) => {
     setDeletingId(id);
-    fetch(`http://192.168.100.24:3000/developers/${id}`, {
+    fetch(`http://localhost:3000/developers/${id}`, {
       method: 'DELETE',
     })
       .then((response) => {
@@ -75,7 +75,7 @@ const Third: React.FC<Props> = ({ navigation }) => {
             <View style={styles.devCard}>
               <Text style={styles.devText}>👤 {item.nome}</Text>
               <Text style={styles.devText}>📧 {item.email}</Text>
-              <Text style={styles.devText}>🎂 {item.dateOfBirth}</Text>
+              <Text style={styles.devText}>� {item.cpf}</Text>
               <View style={styles.buttonInsideCard}>
                 <Button
                   title={deletingId === item.id ? 'Deletando...' : 'Deletar'}

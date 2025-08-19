@@ -15,7 +15,7 @@ export class Developer {
     email: string;
     
     @Column()
-    dateOfBirth: string;
+    cpf: string;
 
     @BeforeInsert()
     generetId(){

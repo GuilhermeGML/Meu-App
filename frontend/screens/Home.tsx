@@ -1,47 +1,32 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Button, Dimensions, Platform, StyleSheet, Text, TextInput, View, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { Button, Dimensions, Platform, StyleSheet, Text, TextInput, View, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/Navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-function calcularIdade(dataNascimento: string): number {
-  const hoje = new Date();
-  const nascimento = new Date(dataNascimento);
-  let idade = hoje.getFullYear() - nascimento.getFullYear();
-  const m = hoje.getMonth() - nascimento.getMonth();
-  if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
-    idade--;
-  }
-  return idade;
-}
+
 
 const Home: React.FC<Props> = ({ navigation }) => {
   const [nome, setNome] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [cpf, setCpf] = useState('');
   const [email, setEmail] = useState('');
   const [cadastroFeito, setCadastroFeito] = useState(false);
   const [loading, setLoading] = useState(false);
   const { width, height } = Dimensions.get('window');
 
   // URL base do seu backend - ajuste conforme necessário
-  const API_BASE_URL = 'http://192.168.100.24:3000';
+  const API_BASE_URL = 'http://localhost:3000';
 
-  // Memoizar a idade calculada para evitar recálculos desnecessários
-  const idade = useMemo(() => {
-    if (dateOfBirth && cadastroFeito) {
-      return calcularIdade(dateOfBirth);
-    }
-    return null;
-  }, [dateOfBirth, cadastroFeito]);
+
 
   // Validação otimizada dos campos
   const isFormValid = useMemo(() => {
-    return nome.trim().length > 0 && 
-           email.trim().length > 0 && 
-           dateOfBirth.trim().length > 0 &&
-           email.includes('@');
-  }, [nome, email, dateOfBirth]);
+  return nome.trim().length > 0 && 
+       email.trim().length > 0 && 
+       cpf.trim().length > 0 &&
+       email.includes('@');
+  }, [nome, email, cpf]);
 
   const handleCadastro = useCallback(async () => {
     if (!isFormValid) {
@@ -56,7 +41,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
       const developerData = {
         nome: nome.trim(),
         email: email.trim().toLowerCase(),
-        dateOfBirth: dateOfBirth.trim()
+        cpf: cpf.trim()
       };
 
       // Controller para timeout da requisição
@@ -83,10 +68,6 @@ const Home: React.FC<Props> = ({ navigation }) => {
         setCadastroFeito(true);
         Alert.alert('Sucesso', 'Desenvolvedor cadastrado com sucesso!');
         
-        // Limpar campos após sucesso (opcional)
-        // setNome('');
-        // setEmail('');
-        // setDateOfBirth('');
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido' }));
         console.error('Erro do servidor:', errorData);
@@ -102,7 +83,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
     } finally {
       setLoading(false);
     }
-  }, [nome, email, dateOfBirth, isFormValid, API_BASE_URL]);
+  }, [nome, email, cpf, isFormValid, API_BASE_URL]);
 
   return (
     <ScrollView 
@@ -123,13 +104,14 @@ const Home: React.FC<Props> = ({ navigation }) => {
       />
       
       <TextInput
-        style={[styles.textoInput, !dateOfBirth.trim() && styles.inputError]}
-        placeholder="Data de nascimento (YYYY-MM-DD)"
-        onChangeText={setDateOfBirth}
-        value={dateOfBirth}
+        style={[styles.textoInput, !cpf.trim() && styles.inputError]}
+        placeholder="Digite seu CPF"
+        onChangeText={setCpf}
+        value={cpf}
         editable={!loading}
+        keyboardType="numeric"
         returnKeyType="next"
-        maxLength={10}
+        maxLength={14}
       />
       
       <TextInput
@@ -152,20 +134,30 @@ const Home: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.loadingText}>Cadastrando...</Text>
           </View>
         ) : (
-          <Button 
-            title="Cadastrar" 
+          <TouchableOpacity 
+            style={[
+              styles.cadastrarButton, 
+              !isFormValid && styles.cadastrarButtonDisabled
+            ]}
             onPress={handleCadastro} 
             disabled={!isFormValid}
-          />
+          >
+            <Text style={[
+              styles.cadastrarButtonText,
+              !isFormValid && styles.cadastrarButtonTextDisabled
+            ]}>
+              Cadastrar
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
 
-      {cadastroFeito && idade !== null && (
+      {cadastroFeito && (
         <View style={styles.successContainer}>
           <Text style={styles.successText}>
             ✅ Cadastro realizado com sucesso!{"\n"}
-            Bem-vindo, {nome}!{"\n"}
-            Idade: {idade} anos{"\n"}
+            Bem-vindo: {nome}!{"\n"}
+            CPF: {cpf} {"\n"}
             Email: {email}
           </Text>
         </View>
@@ -253,5 +245,36 @@ const styles = StyleSheet.create({
   },
   navigationButtons: {
     marginTop: 30,
+  },
+  cadastrarButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    minWidth: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  cadastrarButtonDisabled: {
+    backgroundColor: '#ccc',
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  cadastrarButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  cadastrarButtonTextDisabled: {
+    color: '#999',
   },
 });

@@ -1,4 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
 import { DevelopersService } from './developers.service';
 import { CreateDeveloperDto } from './dto/create-developer.dto';
 import { UpdateDeveloperDto } from './dto/update-developer.dto';
@@ -15,6 +17,16 @@ export class DevelopersController {
   @Get()
   findAll() {
     return this.developersService.findAll();
+  }
+
+  @Get('json')
+  getJson() {
+    const filePath = path.join(__dirname, '../../../developers.json');
+    if (fs.existsSync(filePath)) {
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      return data;
+    }
+    return [];
   }
 
   @Get(':id')

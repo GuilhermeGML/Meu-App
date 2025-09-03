@@ -1,13 +1,16 @@
-import { IsEmail, IsString, Matches } from "class-validator";
+import { IsString, Matches, IsIn } from "class-validator";
 
 export class CreateDeveloperDto {
 
     @IsString()
     nome: string;
 
-    @IsEmail()
-    email: string;
+    @IsString()
+    departamento: string;
 
     @IsString()
     cpf: string;
+
+    @IsIn(['masculino', 'feminino'])
+    sexo: string;
 }

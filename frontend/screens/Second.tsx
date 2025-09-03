@@ -1,114 +1,161 @@
-import React, { useState } from 'react';
-import {
-  Button,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Button, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/Navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Second'>;
 
-const Second: React.FC<Props> = ({ navigation }) => {
-  const [selectedGame, setSelectedGame] = useState<'pokemon' | 'magic' | null>(null);
+type Developer = {
+  id: string;
+  nome: string;
+  cpf: string;
+  departamento: string;
+  sexo: string;
+};
 
-  const handleCardPress = (game: 'pokemon' | 'magic') => {
-    setSelectedGame(game);
+const Third: React.FC<Props> = ({ navigation }) => {
+  const [developers, setDevelopers] = useState<Developer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchDevelopers();
+  }, []);
+
+    const fetchDevelopers = () => {
+      setLoading(true);
+      fetch('http://localhost:3000/developers/json')
+        .then((response) => response.json())
+        .then((data) => {
+          setDevelopers(data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error('Erro ao buscar desenvolvedores:', error);
+          setLoading(false);
+        });
+  };
+
+  const handleDelete = (id: string) => {
+    setDeletingId(id);
+    fetch(`http://localhost:3000/developers/${id}`, {
+      method: 'DELETE',
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Erro ao deletar desenvolvedor');
+        }
+        setDevelopers((prev) => prev.filter((dev) => dev.id !== id));
+        setDeletingId(null);
+      })
+      .catch((error) => {
+        console.error(error);
+        setDeletingId(null);
+      });
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-      <View style={styles.container}>
-        <Text style={styles.title}>Segunda Página</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Third Screen</Text>
+      <Text style={styles.subtitle}>Bem-vindo à terceira página!</Text>
 
-        <View style={styles.optionsContainer}>
-          <TouchableOpacity style={styles.card} onPress={() => handleCardPress('pokemon')}>
-            <Text style={styles.cardText}>Pokémon TCG</Text>
-          </TouchableOpacity>
+      <Text style={styles.listTitle}>Cadastros Feitos:</Text>
 
-          <TouchableOpacity style={styles.card} onPress={() => handleCardPress('magic')}>
-            <Text style={styles.cardText}>Magic: The Gathering</Text>
-          </TouchableOpacity>
-        </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#2d5016" />
+      ) : (
+        <FlatList
+          data={developers}
+          keyExtractor={(item) => item.id}
+          style={{ width: '30%' }}
+          contentContainerStyle={developers.length === 0 ? styles.flatListEmpty : undefined}
+          ListEmptyComponent={
+            <Text style={{ textAlign: 'center', color: '#555' }}>Nenhum desenvolvedor cadastrado.</Text>
+          }
+          renderItem={({ item }) => (
+            <View style={styles.devCard}>
+              <Text style={styles.devText}>👤 {item.nome}</Text>
+              <Text style={styles.devText}>🆔 {item.cpf}</Text>
+              <Text style={styles.devText}>🏢 {item.departamento}</Text>
+              <Text style={styles.devText}>⚧️ {item.sexo}</Text>
+              <View style={styles.buttonInsideCard}>
+                <Button
+                  title={deletingId === item.id ? 'Deletando...' : 'Deletar'}
+                  onPress={() => handleDelete(item.id)}
+                  disabled={deletingId === item.id}
+                  color="#b22222"
+                />
+              </View>
+            </View>
+          )}
+        />
+      )}
 
-        {selectedGame === 'pokemon' && (
-          <Image
-            source={require('../assets/images/pokemon_types.png')}
-            style={styles.image}
-            resizeMode="contain"
-          />
-        )}
-
-        {selectedGame === 'magic' && (
-          <Image
-            source={require('../assets/images/magic_colors.png')}
-            style={styles.image}
-            resizeMode="contain"
-          />
-        )}
-
-        <View style={{ marginTop: 30 }}>
-          <Button title="Voltar para Home" onPress={() => navigation.navigate('Home')} />
-          <View style={{ height: 10 }} />
-          <Button title="Ir para Terceira Página" onPress={() => navigation.navigate('Third')} />
-        </View>
+      <View style={styles.buttonContainer}>
+        <Button title="Voltar para Home" onPress={() => navigation.navigate('Home')} />
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
+export default Third;
+
 const styles = StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
   container: {
-    width: '90%',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    flex: 1, // importante para ocupar tela inteira e permitir scroll
     padding: 20,
-    borderRadius: 10,
+    backgroundColor: '#f0f8e8',
+    alignItems: 'center', // centraliza horizontalmente
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 30,
+    color: '#2d5016',
+    textAlign: 'center',
+    marginBottom: 5,
   },
-  optionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 30,
+  subtitle: {
+    fontSize: 16,
+    color: '#4a7c2a',
+    textAlign: 'center',
+    marginBottom: 20,
   },
-  card: {
-    backgroundColor: 'white',
-    padding: 20,
-    marginHorizontal: 10,
-    borderRadius: 10,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardText: {
+  listTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  image: {
-    width: 250,
-    height: 350,
-    borderRadius: 10,
+    fontWeight: 'bold',
     marginTop: 10,
+    marginBottom: 10,
+    color: '#2d5016',
+  },
+  flatListEmpty: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  devCard: {
+    backgroundColor: '#d9f2d9',
+    padding: 12,
+    marginBottom: 10,
+    borderRadius: 8,
+    alignItems: 'center', // centraliza conteúdo do card
+    width: '100%',
+  },
+  devText: {
+    fontSize: 16,
+    color: '#2a4d14',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  buttonInsideCard: {
+    marginTop: 8,
+    width: '60%',
+  },
+  buttonContainer: {
+    marginTop: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  buttonSpacing: {
+    height: 10,
   },
 });
-
-export default Second;

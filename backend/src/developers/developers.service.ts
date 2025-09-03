@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
 import { CreateDeveloperDto } from './dto/create-developer.dto';
 import { UpdateDeveloperDto } from './dto/update-developer.dto';
 import { Repository } from 'typeorm';
@@ -12,9 +14,26 @@ export class DevelopersService {
     private readonly repository: Repository<Developer>,
   ) {}
 
-  create(dto: CreateDeveloperDto) {
+  async create(dto: CreateDeveloperDto) {
     const developer = this.repository.create(dto);
-    return this.repository.save(developer); 
+    const savedDeveloper = await this.repository.save(developer);
+
+    // Caminho do arquivo JSON
+    const filePath = path.join(__dirname, '../../../developers.json');
+
+    // Lê o arquivo existente ou cria um array vazio
+  let data: any[] = [];
+    if (fs.existsSync(filePath)) {
+      data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    }
+
+    // Adiciona o novo registro
+    data.push(savedDeveloper);
+
+    // Salva de volta no arquivo
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
+    return savedDeveloper;
   }
 
   findAll() {

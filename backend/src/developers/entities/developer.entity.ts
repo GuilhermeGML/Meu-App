@@ -12,10 +12,13 @@ export class Developer {
     nome: string;
     
     @Column()
-    email: string;
-    
+    departamento: string;
+
     @Column()
     cpf: string;
+
+    @Column()
+    sexo: string;
 
     @BeforeInsert()
     generetId(){

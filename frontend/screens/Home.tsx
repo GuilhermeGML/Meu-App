@@ -10,9 +10,10 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 const Home: React.FC<Props> = ({ navigation }) => {
   const [nome, setNome] = useState('');
   const [cpf, setCpf] = useState('');
-  const [email, setEmail] = useState('');
+  const [departamento, setDepartamento] = useState('');
   const [cadastroFeito, setCadastroFeito] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sexo, setSexo] = useState<'masculino' | 'feminino'>('masculino');
   const { width, height } = Dimensions.get('window');
 
   // URL base do seu backend - ajuste conforme necessário
@@ -23,10 +24,10 @@ const Home: React.FC<Props> = ({ navigation }) => {
   // Validação otimizada dos campos
   const isFormValid = useMemo(() => {
   return nome.trim().length > 0 && 
-       email.trim().length > 0 && 
-       cpf.trim().length > 0 &&
-       email.includes('@');
-  }, [nome, email, cpf]);
+    cpf.trim().length > 0 &&
+    departamento.trim().length > 0 &&
+    (sexo === 'masculino' || sexo === 'feminino');
+  }, [nome, cpf, departamento, sexo]);
 
   const handleCadastro = useCallback(async () => {
     if (!isFormValid) {
@@ -40,8 +41,9 @@ const Home: React.FC<Props> = ({ navigation }) => {
       // Dados para enviar ao backend
       const developerData = {
         nome: nome.trim(),
-        email: email.trim().toLowerCase(),
-        cpf: cpf.trim()
+        cpf: cpf.trim(),
+        departamento: departamento.trim(),
+        sexo
       };
 
       // Controller para timeout da requisição
@@ -83,7 +85,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
     } finally {
       setLoading(false);
     }
-  }, [nome, email, cpf, isFormValid, API_BASE_URL]);
+  }, [nome, cpf, departamento, isFormValid, API_BASE_URL]);
 
   return (
     <ScrollView 
@@ -115,17 +117,31 @@ const Home: React.FC<Props> = ({ navigation }) => {
       />
       
       <TextInput
-        style={[styles.textoInput, (!email.trim() || !email.includes('@')) && styles.inputError]}
-        placeholder="Digite seu email"
-        onChangeText={setEmail}
-        value={email}
-        keyboardType="email-address"
+        style={[styles.textoInput, !departamento.trim() && styles.inputError]}
+        placeholder="Digite o departamento"
+        onChangeText={setDepartamento}
+        value={departamento}
         editable={!loading}
-        autoCapitalize="none"
+        autoCapitalize="words"
         autoCorrect={false}
-        returnKeyType="done"
-        onSubmitEditing={handleCadastro}
+        returnKeyType="next"
       />
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+        <Text style={{ marginRight: 10 }}>Sexo:</Text>
+        <TouchableOpacity
+          style={{ backgroundColor: sexo === 'masculino' ? '#2196F3' : '#eee', padding: 10, borderRadius: 5, marginRight: 10 }}
+          onPress={() => setSexo('masculino')}
+        >
+          <Text style={{ color: sexo === 'masculino' ? '#fff' : '#000' }}>Masculino</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ backgroundColor: sexo === 'feminino' ? '#E91E63' : '#eee', padding: 10, borderRadius: 5 }}
+          onPress={() => setSexo('feminino')}
+        >
+          <Text style={{ color: sexo === 'feminino' ? '#fff' : '#000' }}>Feminino</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.buttonContainer}>
         {loading ? (
@@ -158,15 +174,14 @@ const Home: React.FC<Props> = ({ navigation }) => {
             ✅ Cadastro realizado com sucesso!{"\n"}
             Bem-vindo: {nome}!{"\n"}
             CPF: {cpf} {"\n"}
-            Email: {email}
+            Departamento: {departamento}{"\n"}
+            Sexo: {sexo === 'masculino' ? 'Masculino' : 'Feminino'}
           </Text>
         </View>
       )}
 
       <View style={styles.navigationButtons}>
         <Button title="Segunda Página" onPress={() => navigation.navigate('Second')} />
-        <View style={{ height: 10 }} />
-        <Button title="Terceira Página" onPress={() => navigation.navigate('Third')} />
       </View>
     </ScrollView>
   );
